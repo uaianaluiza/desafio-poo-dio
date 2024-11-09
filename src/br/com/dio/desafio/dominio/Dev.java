@@ -1,5 +1,6 @@
 package br.com.dio.desafio.dominio;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class Dev {
@@ -7,14 +8,14 @@ public class Dev {
     private Set<Conteudo> conteudosInscritos = new LinkedHashSet<>();
     private Set<Conteudo> conteudosConcluidos = new LinkedHashSet<>();
 
-    public void inscreverBootcamp(Bootcamp bootcamp){
+    public void inscreverBootcamp(Bootcamp bootcamp) {
         this.conteudosInscritos.addAll(bootcamp.getConteudos());
         bootcamp.getDevsInscritos().add(this);
     }
 
     public void progredir() {
         Optional<Conteudo> conteudo = this.conteudosInscritos.stream().findFirst();
-        if(conteudo.isPresent()) {
+        if (conteudo.isPresent()) {
             this.conteudosConcluidos.add(conteudo.get());
             this.conteudosInscritos.remove(conteudo.get());
         } else {
@@ -22,10 +23,30 @@ public class Dev {
         }
     }
 
+    public LocalDate calculaDataEncerramentoBootcamp(Bootcamp bootcamp, int diasDeEstudo, int tempoPorDia) {
+
+        if (diasDeEstudo < 0 || diasDeEstudo > 7) {
+            throw new RuntimeException("Dias de estudo deve ser entre 1 e 7 dias");
+        }
+
+        if (tempoPorDia < 0.0 || tempoPorDia > 24.0) {
+            throw new RuntimeException("O tempo de estudo por dia deve ser entre 1 e 24 horas");
+        }
+
+        int conteudoTotal = bootcamp.calculaCargaHoraria();
+
+        int horasEstudoSemana = diasDeEstudo * tempoPorDia;
+
+        long semanasNecessarias = conteudoTotal / horasEstudoSemana;
+
+        return bootcamp.getDataInicial().plusWeeks(semanasNecessarias);
+
+    }
+
     public double calcularTotalXp() {
         Iterator<Conteudo> iterator = this.conteudosConcluidos.iterator();
         double soma = 0;
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             double next = iterator.next().calcularXp();
             soma += next;
         }
